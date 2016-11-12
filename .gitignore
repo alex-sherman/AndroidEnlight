@@ -1,3 +1,5 @@
+*.*~
+
 # Built application files
 *.apk
 *.ap_
@@ -35,6 +37,9 @@ captures/
 # Intellij
 *.iml
 .idea/workspace.xml
+*/.idea/*
+.idea/*
+.swp
 
-# Keystore files
-*.jks
+# Mac files
+.DS_Store
