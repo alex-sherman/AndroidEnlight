@@ -19,20 +19,19 @@ public class SocketTransport extends TransportThread {
     DatagramSocket socket;
     byte[] buffer = new byte[4096];
     SocketAddress broadcast;
-    public SocketTransport(int local_port) throws SocketException {
+    public SocketTransport(MRPC mrpc, int local_port) throws SocketException {
+        super(mrpc);
         this.localPort = local_port;
         this.remote_port = local_port;
         socket = new DatagramSocket(local_port);
         broadcast = new InetSocketAddress("192.168.1.255", remote_port);
-        //SocketAddress addr = new InetSocketAddress("0.0.0.0", local_port);
-        //socket.bind(addr);
     }
     @Override
     public String poll() {
         DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
         try {
             socket.receive(pkt);
-            return new String(buffer, "ASCII");
+            return new String(buffer, 0, pkt.getLength(), "ASCII");
         } catch (IOException e) {
             return null;
         }

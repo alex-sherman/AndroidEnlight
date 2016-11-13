@@ -3,6 +3,7 @@ package mrpc;
 import android.os.AsyncTask;
 
 public abstract class TransportThread extends Thread {
+    protected MRPC mrpc;
     AsyncTask<String, Boolean, Void> sendTask() {
         return new AsyncTask<String, Boolean, Void>() {
             @Override
@@ -12,7 +13,8 @@ public abstract class TransportThread extends Thread {
             }
         };
     }
-    public TransportThread() {
+    public TransportThread(MRPC mrpc) {
+        this.mrpc = mrpc;
         setDaemon(true);
     }
 
@@ -28,7 +30,7 @@ public abstract class TransportThread extends Thread {
     }
     protected abstract String poll();
     protected abstract Boolean send(String message);
-    protected void onRecv(Message message) { }
+    protected void onRecv(Message message) { mrpc.onReceive(message); }
     public void sendAsync(Message message) {
         sendTask().execute(message.toJSON());
     }
