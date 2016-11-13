@@ -41,16 +41,17 @@ public class MRPC {
         id++;
     }
     public void onReceive(Message message) {
-        if(message instanceof Message.Response) {
-            Message.Response response = (Message.Response)message;
-            Result r = results.get(message.id);
-            if(r != null) {
-                boolean success = response.error == null;
-                r.resolve(mainHandler, success ? response.result : response.error, success);
-            }
-        }
-        else if(message instanceof Message.Request) {
+        if(message.dst.equals(uuid.toString())) {
+            if (message instanceof Message.Response) {
+                Message.Response response = (Message.Response) message;
+                Result r = results.get(message.id);
+                if (r != null) {
+                    boolean success = response.error == null;
+                    r.resolve(mainHandler, success ? response.result : response.error, success);
+                }
+            } else if (message instanceof Message.Request) {
 
+            }
         }
     }
 }

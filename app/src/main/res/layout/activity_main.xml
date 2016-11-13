@@ -10,19 +10,47 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="net.vector57.enlight.MainActivity">
 
-    <TextView
+    <Switch
+        android:text="Hallway "
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        android:id="@+id/device_list" />
+        android:id="@+id/hallway"
+        android:checked="false"
+        android:textAlignment="textEnd"
+        android:textSize="20sp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
 
-    <Button
-        android:text="Button"
+    <Switch
+        android:text="Living Room "
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView"
-        android:layout_toEndOf="@+id/textView"
-        android:layout_marginTop="82dp"
-        android:id="@+id/button"
-        android:onClick="faff" />
+        android:id="@+id/livingRoom"
+        android:checked="false"
+        android:textAlignment="textEnd"
+        android:textSize="20sp"
+        android:layout_below="@+id/hallway"
+        android:layout_alignParentEnd="true" />
+
+    <Switch
+        android:text="Desk "
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/desk"
+        android:checked="false"
+        android:textAlignment="textEnd"
+        android:textSize="20sp"
+        android:layout_below="@+id/livingRoom"
+        android:layout_alignParentEnd="true" />
+
+    <Switch
+        android:text="Couch "
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/couch"
+        android:checked="false"
+        android:textAlignment="textEnd"
+        android:textSize="20sp"
+        android:layout_below="@+id/desk"
+        android:layout_alignParentEnd="true" />
 </RelativeLayout>
