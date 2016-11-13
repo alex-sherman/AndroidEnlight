@@ -1,5 +1,8 @@
 package mrpc;
 
+import android.content.Context;
+import android.os.Handler;
+
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.UUID;
@@ -13,7 +16,11 @@ public class MRPC {
     TransportThread transport;
     private HashMap<Integer, Result> results = new HashMap<>();
     private int id = 1;
-    public MRPC() {
+    private Context mainContext;
+    private Handler mainHandler;
+    public MRPC(Context mainContext) {
+        this.mainContext = mainContext;
+        mainHandler = new Handler(mainContext.getMainLooper());
         uuid = UUID.randomUUID();
         try {
             transport = new SocketTransport(this, 50123);
@@ -39,7 +46,7 @@ public class MRPC {
             Result r = results.get(message.id);
             if(r != null) {
                 boolean success = response.error == null;
-                r.resolve(success ? response.result : response.error, success);
+                r.resolve(mainHandler, success ? response.result : response.error, success);
             }
         }
         else if(message instanceof Message.Request) {
