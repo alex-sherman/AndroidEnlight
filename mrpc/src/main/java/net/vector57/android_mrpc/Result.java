@@ -1,6 +1,7 @@
 package net.vector57.android_mrpc;
 
 import android.os.Handler;
+import android.support.annotation.CallSuper;
 
 import com.google.gson.JsonElement;
 
@@ -10,9 +11,6 @@ import com.google.gson.JsonElement;
 
 public class Result implements Runnable{
     public static abstract class Callback {
-        public void onResult(Message.Response response) {};
-    }
-    public static abstract class JSONCallback extends Callback {
         public void onResult(Message.Response response) {
             if(response.error == null)
                 this.onSuccess(response.result);
