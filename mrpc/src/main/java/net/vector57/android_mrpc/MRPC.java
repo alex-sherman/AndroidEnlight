@@ -46,8 +46,7 @@ public class MRPC {
                 Message.Response response = (Message.Response) message;
                 Result r = results.get(message.id);
                 if (r != null) {
-                    boolean success = response.error == null;
-                    r.resolve(mainHandler, success ? response.result : response.error, success);
+                    r.resolve(mainHandler, response);
                 }
             } else if (message instanceof Message.Request) {
 

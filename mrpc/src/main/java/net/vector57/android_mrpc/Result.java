@@ -10,26 +10,30 @@ import com.google.gson.JsonElement;
 
 public class Result implements Runnable{
     public static abstract class Callback {
+        public void onResult(Message.Response response) {};
+    }
+    public static abstract class JSONCallback extends Callback {
+        public void onResult(Message.Response response) {
+            if(response.error == null)
+                this.onSuccess(response.result);
+            else
+                this.onFailure(response.error);
+        };
         public void onSuccess(JsonElement value) {};
         public void onFailure(JsonElement value) {};
     }
-    private boolean success;
-    private JsonElement value;
+    private Message.Response message;
     public Callback callback;
     public Result(Callback callback) {
         this.callback = callback;
     }
-    public void resolve(Handler handler, JsonElement value, boolean success) {
-        this.success = success;
-        this.value = value;
+    public void resolve(Handler handler, Message.Response message) {
+        this.message = message;
         handler.post(this);
     }
 
     @Override
     public void run() {
-        if(success)
-            this.callback.onSuccess(value);
-        else
-            this.callback.onFailure(value);
+        callback.onResult(message);
     }
 }
