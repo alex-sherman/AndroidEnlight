@@ -10,7 +10,7 @@ import java.util.Set;
  * Created by Vector on 11/12/2016.
  */
 
-public class Result implements Runnable {
+public class Result {
     public static final long TIMEOUT = 1000;
     public static final long RESEND_DELAY = 200;
     public static abstract class Callback {
@@ -32,9 +32,10 @@ public class Result implements Runnable {
     private Set<String> requiredResponses;
     private boolean gotResponse = false;
 
-    public boolean isCompleted() { return (gotResponse && requiredResponses.isEmpty()) || System.currentTimeMillis() - creationTime > TIMEOUT; }
+    public boolean isCompleted() { return System.currentTimeMillis() - creationTime > TIMEOUT; }
     public boolean needsResend() {
-        return System.currentTimeMillis() - lastSent > RESEND_DELAY; }
+        return !requiredResponses.isEmpty() && System.currentTimeMillis() - lastSent > RESEND_DELAY;
+    }
     public void markSent() { lastSent = System.currentTimeMillis(); }
 
     public Result(Set<String> requiredResponses, Message.Request request, Callback callback) {
@@ -43,16 +44,16 @@ public class Result implements Runnable {
         this.request = request;
         this.callback = callback;
     }
-    public void resolve(Handler handler, Message.Response message) {
+    public void resolve(Handler handler, final Message.Response message) {
         this.gotResponse = true;
         requiredResponses.remove(message.src);
         this.response = message;
         if(this.callback != null)
-            handler.post(this);
-    }
-
-    @Override
-    public void run() {
-        callback.onResult(response);
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onResult(message);
+                }
+            });
     }
 }
