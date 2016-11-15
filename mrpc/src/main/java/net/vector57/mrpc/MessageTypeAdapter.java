@@ -1,4 +1,4 @@
-package net.vector57.android_mrpc;
+package net.vector57.mrpc;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

@@ -1,4 +1,4 @@
-package net.vector57.android_mrpc;
+package net.vector57.mrpc;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

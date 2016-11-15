@@ -1,4 +1,4 @@
-package net.vector57.android_mrpc;
+package net.vector57.mrpc;
 
 /**
  * Created by Vector on 11/12/2016.

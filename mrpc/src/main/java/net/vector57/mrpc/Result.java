@@ -1,7 +1,6 @@
-package net.vector57.android_mrpc;
+package net.vector57.mrpc;
 
 import android.os.Handler;
-import android.support.annotation.CallSuper;
 
 import com.google.gson.JsonElement;
 
