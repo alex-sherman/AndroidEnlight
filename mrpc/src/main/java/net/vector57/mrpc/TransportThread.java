@@ -8,9 +8,7 @@ public abstract class TransportThread extends Thread {
         return new AsyncTask<String, Boolean, Void>() {
             @Override
             protected Void doInBackground(String... params) {
-                //TODO: Resend while past repliers have not responded
-                for(int i = 0; i < 3; i++)
-                    send(params[0]);
+                send(params[0]);
                 return null;
             }
         };
