@@ -34,4 +34,5 @@ public abstract class TransportThread extends Thread {
     public void sendAsync(Message message) {
         sendTask().execute(message.toJSON());
     }
+    public void close() { }
 }

@@ -1,6 +1,7 @@
 package net.vector57.mrpc;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,6 +27,6 @@ public class PathCacheEntry {
         entries.put(uuid, 0L);
     }
     public synchronized Set<String> getUUIDs() {
-        return entries.keySet();
+        return new HashSet<String>(entries.keySet());
     }
 }

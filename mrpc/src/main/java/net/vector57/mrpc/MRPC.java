@@ -22,17 +22,31 @@ public class MRPC extends Thread {
     private int id = 1;
     private Context mainContext;
     private Handler mainHandler;
+    private volatile boolean running = false;
     public MRPC(Context mainContext) {
         this.setDaemon(true);
         this.mainContext = mainContext;
         mainHandler = new Handler(mainContext.getMainLooper());
         uuid = UUID.randomUUID();
+    }
+
+    @Override
+    public synchronized void start() {
         try {
             transport = new SocketTransport(this, 50123);
             transport.start();
+            running = true;
+            super.start();
         } catch (SocketException e) {
             e.printStackTrace();
         }
+    }
+
+    public synchronized void close() throws InterruptedException {
+        running = false;
+        join();
+        transport.close();
+        transport = null;
     }
 
     private synchronized PathCacheEntry getPathEntry(String path) {
@@ -56,7 +70,7 @@ public class MRPC extends Thread {
 
     @Override
     public void run() {
-        while(true) {
+        while(running) {
             pollResults();
         }
     }

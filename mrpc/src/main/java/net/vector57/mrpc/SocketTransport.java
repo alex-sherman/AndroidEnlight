@@ -51,4 +51,10 @@ public class SocketTransport extends TransportThread {
             return false;
         }
     }
+
+    @Override
+    public void close() {
+        socket.close();
+        super.close();
+    }
 }
