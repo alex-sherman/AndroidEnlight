@@ -4,8 +4,10 @@ import android.content.Context;
 import android.os.Handler;
 
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -23,6 +25,14 @@ public class MRPC extends Thread {
     private Context mainContext;
     private Handler mainHandler;
     private volatile boolean running = false;
+    public MRPC(Context mainContext, Map<String, List<String>> pathCache) {
+        this(mainContext);
+        if(pathCache != null) {
+            for (Map.Entry<String, List<String>> entry : pathCache.entrySet()) {
+                this.pathCache.put(entry.getKey(), new PathCacheEntry(entry.getValue()));
+            }
+        }
+    }
     public MRPC(Context mainContext) {
         this.setDaemon(true);
         this.mainContext = mainContext;
@@ -42,7 +52,7 @@ public class MRPC extends Thread {
         }
     }
 
-    public synchronized void close() throws InterruptedException {
+    public void close() throws InterruptedException {
         running = false;
         join();
         transport.close();
@@ -53,6 +63,15 @@ public class MRPC extends Thread {
         if(!pathCache.containsKey(path))
             pathCache.put(path, new PathCacheEntry());
         return pathCache.get(path);
+    }
+
+    public synchronized HashMap<String, List<String>> getPathCache() {
+        HashMap<String, List<String>> output = new HashMap<>();
+        for (Map.Entry<String, PathCacheEntry> entry:
+             pathCache.entrySet()) {
+            output.put(entry.getKey(), new ArrayList<String>(entry.getValue().getUUIDs()));
+        }
+        return output;
     }
 
     private synchronized void pollResults() {

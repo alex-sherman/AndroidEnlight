@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 
 public abstract class TransportThread extends Thread {
     protected MRPC mrpc;
+    private volatile boolean running = true;
     AsyncTask<String, Boolean, Void> sendTask() {
         return new AsyncTask<String, Boolean, Void>() {
             @Override
@@ -20,7 +21,7 @@ public abstract class TransportThread extends Thread {
 
     @Override
     public void run() {
-        while(true) {
+        while(running) {
             String recvd = poll();
             Message message = Message.FromJson(recvd);
             if(message != null) {
@@ -34,5 +35,5 @@ public abstract class TransportThread extends Thread {
     public void sendAsync(Message message) {
         sendTask().execute(message.toJSON());
     }
-    public void close() { }
+    public void close() { this.running = false; }
 }

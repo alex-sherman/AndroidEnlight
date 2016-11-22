@@ -1,7 +1,9 @@
 package net.vector57.mrpc;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,6 +14,12 @@ import java.util.Set;
 public class PathCacheEntry {
     public static final long TIMEOUT = 1000;
     private HashMap<String, Long> entries = new HashMap<>();
+    public PathCacheEntry() { }
+    public PathCacheEntry(List<String> entries) {
+        for (String uuid : entries) {
+            this.entries.put(uuid, 0L);
+        }
+    }
     public synchronized Set<String> onSend() {
         Long sendTime = System.currentTimeMillis();
         for (Map.Entry<String, Long> entry: entries.entrySet()) {
