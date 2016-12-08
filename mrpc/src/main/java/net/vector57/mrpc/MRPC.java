@@ -91,6 +91,11 @@ public class MRPC extends Thread {
     public void run() {
         while(running) {
             pollResults();
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 

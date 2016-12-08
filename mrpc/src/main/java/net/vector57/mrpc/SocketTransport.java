@@ -24,7 +24,7 @@ public class SocketTransport extends TransportThread {
         this.localPort = local_port;
         this.remote_port = local_port;
         socket = new DatagramSocket(local_port);
-        broadcast = new InetSocketAddress("192.168.1.255", remote_port);
+        broadcast = new InetSocketAddress("255.255.255.255", remote_port);
     }
     @Override
     public String poll() {
