@@ -16,7 +16,7 @@ import java.util.UUID;
  * Created by Vector on 11/12/2016.
  */
 
-public class MRPC extends Thread {
+public class MRPC implements Runnable {
     public UUID uuid;
     TransportThread transport;
     private HashMap<Integer, Result> results = new HashMap<>();
@@ -24,6 +24,7 @@ public class MRPC extends Thread {
     private int id = 1;
     private Context mainContext;
     private Handler mainHandler;
+    private Thread mThread;
     private volatile boolean running = false;
     public MRPC(Context mainContext, Map<String, List<String>> pathCache) {
         this(mainContext);
@@ -34,27 +35,28 @@ public class MRPC extends Thread {
         }
     }
     public MRPC(Context mainContext) {
-        this.setDaemon(true);
+
         this.mainContext = mainContext;
         mainHandler = new Handler(mainContext.getMainLooper());
         uuid = UUID.randomUUID();
     }
 
-    @Override
     public synchronized void start() {
+        mThread = new Thread(this);
+        mThread.setDaemon(true);
         try {
             transport = new SocketTransport(this, 50123);
             transport.start();
             running = true;
-            super.start();
         } catch (SocketException e) {
             e.printStackTrace();
         }
+        mThread.start();
     }
 
     public void close() throws InterruptedException {
         running = false;
-        join();
+        mThread.join();
         transport.close();
         transport = null;
     }
