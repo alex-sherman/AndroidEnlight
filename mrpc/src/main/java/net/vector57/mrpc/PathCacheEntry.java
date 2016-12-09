@@ -3,6 +3,7 @@ package net.vector57.mrpc;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,12 +23,14 @@ public class PathCacheEntry {
     }
     public synchronized Set<String> onSend() {
         Long sendTime = System.currentTimeMillis();
-        for (Map.Entry<String, Long> entry: entries.entrySet()) {
+        Iterator<Map.Entry<String, Long>> iter = entries.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry<String, Long> entry = iter.next();
             //A value of 0 denotes a response was previously received in time
             if(entry.getValue() == 0)
                 entries.put(entry.getKey(), sendTime);
             else if(sendTime - entry.getValue() > TIMEOUT)
-                entries.remove(entry.getValue());
+                iter.remove();
         }
         return getUUIDs();
     }
