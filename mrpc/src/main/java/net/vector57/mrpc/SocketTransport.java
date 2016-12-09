@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
@@ -19,12 +20,12 @@ public class SocketTransport extends TransportThread {
     DatagramSocket socket;
     byte[] buffer = new byte[4096];
     SocketAddress broadcast;
-    public SocketTransport(MRPC mrpc, int local_port) throws SocketException {
+    public SocketTransport(MRPC mrpc, InetAddress broadcastAddress, int local_port) throws SocketException {
         super(mrpc);
         this.localPort = local_port;
         this.remote_port = local_port;
         socket = new DatagramSocket(local_port);
-        broadcast = new InetSocketAddress("255.255.255.255", remote_port);
+        broadcast = new InetSocketAddress(broadcastAddress, remote_port);
     }
     @Override
     public String poll() {

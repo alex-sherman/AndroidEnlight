@@ -3,7 +3,9 @@ package net.vector57.mrpc;
 import android.content.Context;
 import android.os.Handler;
 
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -22,7 +24,6 @@ public class MRPC implements Runnable {
     private HashMap<Integer, Result> results = new HashMap<>();
     private HashMap<String, PathCacheEntry> pathCache = new HashMap<>();
     private int id = 1;
-    private Context mainContext;
     private Handler mainHandler;
     private Thread mThread;
     private volatile boolean running = false;
@@ -35,17 +36,23 @@ public class MRPC implements Runnable {
         }
     }
     public MRPC(Context mainContext) {
-
-        this.mainContext = mainContext;
         mainHandler = new Handler(mainContext.getMainLooper());
         uuid = UUID.randomUUID();
     }
 
     public synchronized void start() {
+        try {
+            start(InetAddress.getByName("255.255.255.255"));
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void start(InetAddress broadcastAddress) {
         mThread = new Thread(this);
         mThread.setDaemon(true);
         try {
-            transport = new SocketTransport(this, 50123);
+            transport = new SocketTransport(this, broadcastAddress, 50123);
             transport.start();
             running = true;
         } catch (SocketException e) {
