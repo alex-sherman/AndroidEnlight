@@ -2,10 +2,10 @@ package net.vector57.mrpc;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.HandlerThread;
 
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,47 +25,37 @@ public class MRPC implements Runnable {
     private HashMap<String, PathCacheEntry> pathCache = new HashMap<>();
     private int id = 1;
     private Handler mainHandler;
-    private Thread mThread;
+    private Handler handler;
+    private HandlerThread handlerThread;
     private volatile boolean running = false;
-    public MRPC(Context mainContext, Map<String, List<String>> pathCache) {
-        this(mainContext);
+    public MRPC(Context mainContext, InetAddress broadcastAddress, Map<String, List<String>> pathCache) throws SocketException {
+        this(mainContext, broadcastAddress);
         if(pathCache != null) {
             for (Map.Entry<String, List<String>> entry : pathCache.entrySet()) {
                 this.pathCache.put(entry.getKey(), new PathCacheEntry(entry.getValue()));
             }
         }
     }
-    public MRPC(Context mainContext) {
+
+    public MRPC(Context mainContext, InetAddress broadcastAddress) throws SocketException {
+        transport = new SocketTransport(this, broadcastAddress, 50123);
         mainHandler = new Handler(mainContext.getMainLooper());
         uuid = UUID.randomUUID();
-    }
 
-    public synchronized void start() {
-        try {
-            start(InetAddress.getByName("255.255.255.255"));
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public synchronized void start(InetAddress broadcastAddress) {
-        mThread = new Thread(this);
-        mThread.setDaemon(true);
-        try {
-            transport = new SocketTransport(this, broadcastAddress, 50123);
-            transport.start();
-            running = true;
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-        mThread.start();
+        running = true;
+        handlerThread = new HandlerThread("MRPC");
+        handlerThread.start();
+        handler = new Handler(handlerThread.getLooper());
+        handler.post(this);
+        handler.post(transport);
     }
 
     public void close() throws InterruptedException {
         running = false;
-        mThread.join();
         transport.close();
         transport = null;
+        handlerThread.quit();
+        handlerThread.join();
     }
 
     private synchronized PathCacheEntry getPathEntry(String path) {
@@ -84,7 +74,6 @@ public class MRPC implements Runnable {
     }
 
     private synchronized void pollResults() {
-        Set<Map.Entry<Integer, Result>> f = results.entrySet();
         for(Iterator<Map.Entry<Integer, Result>> it = results.entrySet().iterator(); it.hasNext(); ) {
             Result r = it.next().getValue();
             if(r.isCompleted())
@@ -112,11 +101,13 @@ public class MRPC implements Runnable {
         RPC(path, value, null);
     }
     public synchronized void RPC(String path, Object value, Result.Callback callback) {
-        Set<String> requiredResponses = getPathEntry(path).onSend();
-        Message.Request m = new Message.Request(id, uuid.toString(), path, value);
-        results.put(id, new Result(requiredResponses, m, callback));
-        transport.sendAsync(m);
-        id++;
+        if(transport != null) {
+            Set<String> requiredResponses = getPathEntry(path).onSend();
+            Message.Request m = new Message.Request(id, uuid.toString(), path, value);
+            results.put(id, new Result(requiredResponses, m, callback));
+            transport.sendAsync(m);
+            id++;
+        }
     }
     public synchronized void onReceive(Message message) {
         if(message.dst.equals(uuid.toString())) {

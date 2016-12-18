@@ -2,7 +2,7 @@ package net.vector57.mrpc;
 
 import android.os.AsyncTask;
 
-public abstract class TransportThread extends Thread {
+public abstract class TransportThread implements Runnable {
     protected MRPC mrpc;
     private volatile boolean running = true;
     AsyncTask<String, Boolean, Void> sendTask() {
@@ -16,7 +16,6 @@ public abstract class TransportThread extends Thread {
     }
     public TransportThread(MRPC mrpc) {
         this.mrpc = mrpc;
-        setDaemon(true);
     }
 
     @Override

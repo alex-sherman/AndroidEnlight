@@ -40,6 +40,8 @@ public class SocketTransport extends TransportThread {
 
     @Override
     public Boolean send(String message) {
+        if(broadcast == null)
+            return false;
         byte[] messageBytes;
         try {
             messageBytes = message.getBytes("ASCII");
