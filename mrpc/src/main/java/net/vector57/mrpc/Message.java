@@ -3,6 +3,7 @@ package net.vector57.mrpc;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.stream.MalformedJsonException;
 
 /**
  * Created by Vector on 11/12/2016.
@@ -45,7 +46,13 @@ public abstract class Message {
     }
 
     public static Message FromJson(String string) {
-        return gson().fromJson(string, Message.class);
+        try {
+            return gson().fromJson(string, Message.class);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public String toJSON() {

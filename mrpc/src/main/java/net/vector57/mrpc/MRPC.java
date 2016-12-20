@@ -18,15 +18,13 @@ import java.util.UUID;
  * Created by Vector on 11/12/2016.
  */
 
-public class MRPC implements Runnable {
+public class MRPC extends Thread {
     public UUID uuid;
     TransportThread transport;
     private HashMap<Integer, Result> results = new HashMap<>();
     private HashMap<String, PathCacheEntry> pathCache = new HashMap<>();
     private int id = 1;
     private Handler mainHandler;
-    private Handler handler;
-    private HandlerThread handlerThread;
     private volatile boolean running = false;
     public MRPC(Context mainContext, InetAddress broadcastAddress, Map<String, List<String>> pathCache) throws SocketException {
         this(mainContext, broadcastAddress);
@@ -43,19 +41,23 @@ public class MRPC implements Runnable {
         uuid = UUID.randomUUID();
 
         running = true;
-        handlerThread = new HandlerThread("MRPC");
-        handlerThread.start();
-        handler = new Handler(handlerThread.getLooper());
-        handler.post(this);
-        handler.post(transport);
+        this.start();
+        transport.start();
     }
 
-    public void close() throws InterruptedException {
+    public void close() {
         running = false;
-        transport.close();
+        try {
+            transport.close();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         transport = null;
-        handlerThread.quit();
-        handlerThread.join();
+        try {
+            this.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private synchronized PathCacheEntry getPathEntry(String path) {

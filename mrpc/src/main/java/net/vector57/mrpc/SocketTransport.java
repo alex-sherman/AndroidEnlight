@@ -56,7 +56,7 @@ public class SocketTransport extends TransportThread {
     }
 
     @Override
-    public void close() {
+    public void close() throws InterruptedException {
         socket.close();
         super.close();
     }

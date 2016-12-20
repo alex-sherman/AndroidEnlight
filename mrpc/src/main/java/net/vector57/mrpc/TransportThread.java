@@ -2,7 +2,7 @@ package net.vector57.mrpc;
 
 import android.os.AsyncTask;
 
-public abstract class TransportThread implements Runnable {
+public abstract class TransportThread extends Thread {
     protected MRPC mrpc;
     private volatile boolean running = true;
     AsyncTask<String, Boolean, Void> sendTask() {
@@ -34,5 +34,5 @@ public abstract class TransportThread implements Runnable {
     public void sendAsync(Message message) {
         sendTask().execute(message.toJSON());
     }
-    public void close() { this.running = false; }
+    public void close() throws InterruptedException { this.running = false; this.join(); }
 }
