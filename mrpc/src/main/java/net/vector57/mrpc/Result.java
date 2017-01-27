@@ -30,7 +30,6 @@ public class Result {
     private long lastSent;
     public Callback callback;
     private Set<String> requiredResponses;
-    private boolean gotResponse = false;
 
     public boolean isCompleted() { return System.currentTimeMillis() - creationTime > TIMEOUT; }
     public boolean needsResend() {
@@ -45,7 +44,6 @@ public class Result {
         this.callback = callback;
     }
     public void resolve(Handler handler, final Message.Response message) {
-        this.gotResponse = true;
         requiredResponses.remove(message.src);
         this.response = message;
         if(this.callback != null)

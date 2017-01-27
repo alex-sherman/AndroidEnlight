@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -100,11 +101,14 @@ public class MRPC extends Thread {
     }
 
     public void RPC(String path, Object value) {
-        RPC(path, value, null);
+        RPC(path, value, null, true);
     }
     public synchronized void RPC(String path, Object value, Result.Callback callback) {
+        RPC(path, value, callback, true);
+    }
+    public synchronized void RPC(String path, Object value, Result.Callback callback, boolean resend) {
         if(transport != null) {
-            Set<String> requiredResponses = getPathEntry(path).onSend();
+            Set<String> requiredResponses = resend ? getPathEntry(path).onSend() : new HashSet<String>();
             Message.Request m = new Message.Request(id, uuid.toString(), path, value);
             results.put(id, new Result(requiredResponses, m, callback));
             transport.sendAsync(m);
