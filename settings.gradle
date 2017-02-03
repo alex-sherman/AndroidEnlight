@@ -1,1 +1,1 @@
-include ':mrpc'
+include ':mrpc-android', ':mrpc-java'

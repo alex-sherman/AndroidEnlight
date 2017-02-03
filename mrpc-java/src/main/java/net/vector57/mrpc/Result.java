@@ -1,7 +1,5 @@
 package net.vector57.mrpc;
 
-import android.os.Handler;
-
 import com.google.gson.JsonElement;
 
 import java.util.Set;
@@ -43,15 +41,10 @@ public class Result {
         this.request = request;
         this.callback = callback;
     }
-    public void resolve(Handler handler, final Message.Response message) {
+    public void resolve(final Message.Response message) {
         requiredResponses.remove(message.src);
         this.response = message;
         if(this.callback != null)
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    callback.onResult(message);
-                }
-            });
+            callback.onResult(message);
     }
 }
