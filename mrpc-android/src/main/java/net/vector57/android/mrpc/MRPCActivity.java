@@ -55,7 +55,7 @@ public class MRPCActivity extends AppCompatActivity {
         if(open_mrpcs == 0) {
             Map<String, List<String>> pathCache = _mrpc.getPathCache();
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-            sharedPref.edit().putString(new Gson().toJson(pathCache), path_cache_preference_key);
+            sharedPref.edit().putString(path_cache_preference_key, new Gson().toJson(pathCache)).apply();
             _mrpc.close();
             _mrpc = null;
         }
