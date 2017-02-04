@@ -1,8 +1,6 @@
 package net.vector57.android.mrpc;
 
-import android.app.Activity;
 import android.content.ComponentCallbacks2;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -13,7 +11,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 
-import net.vector57.android.mrpc.MRPC;
 import net.vector57.mrpc.Result;
 
 import java.io.IOException;
@@ -27,13 +24,13 @@ import java.util.Map;
 
 public class MRPCActivity extends AppCompatActivity {
     private static int open_mrpcs = 0;
-    private static MRPC _mrpc;
-    public static MRPC mrpc() { return _mrpc; }
+    private static AndroidMRPC _mrpc;
+    public static AndroidMRPC mrpc() { return _mrpc; }
     public static void mrpc(String path, Object value, Result.Callback callback) { _mrpc.RPC(path, value, callback); }
     public static void mrpc(String path, Object value) { _mrpc.RPC(path, value); }
     public static String path_cache_preference_key = "MRPC_path_cache";
 
-    private synchronized MRPC allocateMRPC() {
+    private synchronized AndroidMRPC allocateMRPC() {
         if(open_mrpcs == 0) {
             if(BuildConfig.DEBUG && _mrpc != null)
                 throw new AssertionError("Reference counting logic failure");
@@ -44,7 +41,7 @@ public class MRPCActivity extends AppCompatActivity {
             Map<String, List<String>> pathCache = new Gson().fromJson(pathCacheJSON, t);
 
             try {
-                _mrpc = new MRPC(this, Util.getBroadcastAddress(this), pathCache);
+                _mrpc = new AndroidMRPC(this, Util.getBroadcastAddress(this), pathCache);
             } catch (IOException e) {
                 throw new AssertionError("I don't like checked exceptions");
             }
@@ -68,7 +65,7 @@ public class MRPCActivity extends AppCompatActivity {
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
         if(level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
-            Log.d("MRPC", "trimmed");
+            Log.d("AndroidMRPC", "trimmed");
         }
     }
 
