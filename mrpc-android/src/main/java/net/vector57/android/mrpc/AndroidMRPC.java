@@ -35,7 +35,7 @@ public class AndroidMRPC extends MRPC {
         mainHandler = new Handler(mainContext.getMainLooper());
     }
 
-    public synchronized void RPC(String path, Object value, final Result.Callback callback, boolean resend) {
+    public void RPC(final String path, final Object value, final Result.Callback callback, final boolean resend) {
         final Result.Callback wrappedCallback = new Result.Callback() {
             @Override
             public void onResult(final Message.Response response) {
@@ -48,6 +48,17 @@ public class AndroidMRPC extends MRPC {
 
             }
         };
-        super.RPC(path, value, callback == null ? null : wrappedCallback, resend);
+        new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                do_RPC(path, value, callback == null ? null : wrappedCallback, resend);
+                return null;
+            }
+        }.execute();
+
+    }
+    private void do_RPC(final String path, final Object value, final Result.Callback callback, final boolean resend) {
+        super.RPC(path, value, callback, resend);
     }
 }
