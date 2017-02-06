@@ -52,13 +52,10 @@ public class AndroidMRPC extends MRPC {
 
             @Override
             protected Void doInBackground(Void... voids) {
-                do_RPC(path, value, callback == null ? null : wrappedCallback, resend);
+                AndroidMRPC.super.RPC(path, value, callback == null ? null : wrappedCallback, resend);
                 return null;
             }
         }.execute();
 
-    }
-    private void do_RPC(final String path, final Object value, final Result.Callback callback, final boolean resend) {
-        super.RPC(path, value, callback, resend);
     }
 }
