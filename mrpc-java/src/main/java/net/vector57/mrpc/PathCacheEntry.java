@@ -27,9 +27,10 @@ public class PathCacheEntry {
         while (iter.hasNext()) {
             Map.Entry<String, Long> entry = iter.next();
             //A value of 0 denotes a response was previously received in time
-            if(entry.getValue() == 0)
+            //TODO: If new messages are being sent to an entry at a rate faster than TIMEOUT it will never be removed from the cache
+            if(entry.getValue() == 0 || sendTime - entry.getValue() < TIMEOUT)
                 entries.put(entry.getKey(), sendTime);
-            else if(sendTime - entry.getValue() > TIMEOUT)
+            else
                 iter.remove();
         }
         return getUUIDs();
