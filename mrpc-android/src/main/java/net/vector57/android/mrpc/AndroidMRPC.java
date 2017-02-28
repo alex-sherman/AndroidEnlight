@@ -7,16 +7,11 @@ import android.os.Handler;
 import net.vector57.mrpc.MRPC;
 import net.vector57.mrpc.Message;
 import net.vector57.mrpc.Result;
-import net.vector57.mrpc.SocketTransport;
-import net.vector57.mrpc.TransportThread;
 
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * Created by Vector on 11/12/2016.

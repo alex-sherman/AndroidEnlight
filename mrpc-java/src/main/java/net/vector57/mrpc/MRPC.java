@@ -17,7 +17,7 @@ import java.util.UUID;
 
 public class MRPC extends Thread {
     public UUID uuid;
-    protected TransportThread transport;
+    protected SocketTransport transport;
     protected HashMap<Integer, Result> results = new HashMap<>();
     private HashMap<String, PathCacheEntry> pathCache = new HashMap<>();
     protected int id = 1;
@@ -77,7 +77,7 @@ public class MRPC extends Thread {
             if(r.isCompleted())
                 it.remove();
             else if (r.needsResend()) {
-                transport.send(r.request);
+                transport.send(r.request, null);
                 r.markSent();
             }
         }
@@ -106,17 +106,17 @@ public class MRPC extends Thread {
             Set<String> requiredResponses = resend ? getPathEntry(path).onSend() : new HashSet<String>();
             Message.Request m = new Message.Request(id, uuid.toString(), path, value);
             results.put(id, new Result(requiredResponses, m, callback));
-            transport.send(m);
+            transport.send(m, getPathEntry(path).getAddresses());
             id++;
         }
     }
-    public synchronized void onReceive(Message message) {
+    public synchronized void onReceive(Message message, InetAddress source) {
         if(message.dst.equals(uuid.toString())) {
             if (message instanceof Message.Response) {
                 Message.Response response = (Message.Response) message;
                 Result r = results.get(message.id);
                 if (r != null) {
-                    getPathEntry(r.request.dst).onRecv(message.src);
+                    getPathEntry(r.request.dst).onRecv(message.src, source);
                     r.resolve(response);
                 }
             } else if (message instanceof Message.Request) {

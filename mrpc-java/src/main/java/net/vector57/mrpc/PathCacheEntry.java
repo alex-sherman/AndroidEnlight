@@ -1,5 +1,6 @@
 package net.vector57.mrpc;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,32 +14,55 @@ import java.util.Set;
  */
 
 public class PathCacheEntry {
-    public static final long TIMEOUT = 1000;
-    private HashMap<String, Long> entries = new HashMap<>();
-    public PathCacheEntry() { }
-    public PathCacheEntry(List<String> entries) {
-        for (String uuid : entries) {
-            this.entries.put(uuid, 0L);
+    private static final long TIMEOUT = 1000;
+    // If only Java had built in Tuples...
+    private static class UUIDEntry {
+        Long lastReceived;
+        InetAddress address;
+        UUIDEntry() {
+            this(0L, null);
+        }
+        UUIDEntry(Long lastReceived, InetAddress address) {
+            this.lastReceived = lastReceived;
+            this.address = address;
+        }
+        public boolean isStale(Long sendTime) {
+            return lastReceived != 0 && sendTime - lastReceived >= TIMEOUT;
         }
     }
-    public synchronized Set<String> onSend() {
+    private HashMap<String, UUIDEntry> entries = new HashMap<>();
+    PathCacheEntry() { }
+    PathCacheEntry(List<String> entries) {
+        for (String uuid : entries) {
+            this.entries.put(uuid, new UUIDEntry());
+        }
+    }
+    synchronized Set<String> onSend() {
         Long sendTime = System.currentTimeMillis();
-        Iterator<Map.Entry<String, Long>> iter = entries.entrySet().iterator();
+        Iterator<Map.Entry<String, UUIDEntry>> iter = entries.entrySet().iterator();
         while (iter.hasNext()) {
-            Map.Entry<String, Long> entry = iter.next();
+            Map.Entry<String, UUIDEntry> entry = iter.next();
             //A value of 0 denotes a response was previously received in time
             //TODO: If new messages are being sent to an entry at a rate faster than TIMEOUT it will never be removed from the cache
-            if(entry.getValue() == 0 || sendTime - entry.getValue() < TIMEOUT)
-                entries.put(entry.getKey(), sendTime);
+            if(!entry.getValue().isStale(sendTime))
+                entry.getValue().lastReceived = sendTime;
             else
                 iter.remove();
         }
         return getUUIDs();
     }
-    public synchronized void onRecv(String uuid) {
-        entries.put(uuid, 0L);
+    synchronized void onRecv(String uuid, InetAddress source) {
+        entries.put(uuid, new UUIDEntry(0L, source));
     }
-    public synchronized Set<String> getUUIDs() {
+    public List<InetAddress> getAddresses() {
+        ArrayList<InetAddress> output = new ArrayList<>();
+        for(UUIDEntry entry : entries.values()) {
+            if(entry.address != null)
+                output.add(entry.address);
+        }
+        return output;
+    }
+    synchronized Set<String> getUUIDs() {
         return new HashSet<String>(entries.keySet());
     }
 }
