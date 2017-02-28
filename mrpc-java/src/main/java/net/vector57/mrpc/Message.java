@@ -10,25 +10,15 @@ import com.google.gson.stream.MalformedJsonException;
  */
 
 public abstract class Message {
-    private static Gson _gson;
     public int id;
     public String src;
     public String dst;
-
-    public static Gson gson() {
-        if(_gson == null) {
-            GsonBuilder builder = new GsonBuilder();
-            builder.registerTypeAdapter(Message.class, new MessageTypeAdapter());
-            _gson = builder.create();
-        }
-        return _gson;
-    }
 
     public static class Request extends Message {
         public JsonElement value;
         public Request(int id, String src, String dst, Object value) {
             super(id, src, dst);
-            this.value = gson().toJsonTree(value);
+            this.value = MRPC.gson().toJsonTree(value);
         }
     }
     public static class Response extends Message {
@@ -47,7 +37,7 @@ public abstract class Message {
 
     public static Message FromJson(String string) {
         try {
-            return gson().fromJson(string, Message.class);
+            return MRPC.gson().fromJson(string, Message.class);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -56,7 +46,7 @@ public abstract class Message {
     }
 
     public String toJSON() {
-        return gson().toJson(this);
+        return MRPC.gson().toJson(this);
     }
 
     public Boolean isValid() {

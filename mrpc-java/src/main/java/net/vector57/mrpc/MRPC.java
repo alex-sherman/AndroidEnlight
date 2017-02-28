@@ -1,8 +1,12 @@
 package net.vector57.mrpc;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,11 +26,22 @@ public class MRPC extends Thread {
     private HashMap<String, PathCacheEntry> pathCache = new HashMap<>();
     protected int id = 1;
 
+    private static Gson _gson;
+
+    public static Gson gson() {
+        if(_gson == null) {
+            GsonBuilder builder = new GsonBuilder();
+            builder.registerTypeAdapter(Message.class, new MessageTypeAdapter());
+            _gson = builder.create();
+        }
+        return _gson;
+    }
+
     private volatile boolean running = false;
-    public MRPC(InetAddress broadcastAddress, Map<String, List<String>> pathCache) throws SocketException {
+    public MRPC(InetAddress broadcastAddress, Map<String, List<PathCacheEntry.UUIDEntry>> pathCache) throws SocketException {
         this(broadcastAddress);
         if(pathCache != null) {
-            for (Map.Entry<String, List<String>> entry : pathCache.entrySet()) {
+            for (Map.Entry<String, List<PathCacheEntry.UUIDEntry>> entry : pathCache.entrySet()) {
                 this.pathCache.put(entry.getKey(), new PathCacheEntry(entry.getValue()));
             }
         }
@@ -62,11 +77,10 @@ public class MRPC extends Thread {
         return pathCache.get(path);
     }
 
-    public synchronized HashMap<String, List<String>> getPathCache() {
-        HashMap<String, List<String>> output = new HashMap<>();
-        for (Map.Entry<String, PathCacheEntry> entry:
-             pathCache.entrySet()) {
-            output.put(entry.getKey(), new ArrayList<String>(entry.getValue().getUUIDs()));
+    public synchronized HashMap<String, List<PathCacheEntry.UUIDEntry>> getPathCache() {
+        HashMap<String, List<PathCacheEntry.UUIDEntry>> output = new HashMap<>();
+        for (Map.Entry<String, PathCacheEntry> entry : pathCache.entrySet()) {
+            output.put(entry.getKey(), new ArrayList<>(entry.getValue().getUUIDs()));
         }
         return output;
     }
@@ -77,7 +91,7 @@ public class MRPC extends Thread {
             if(r.isCompleted())
                 it.remove();
             else if (r.needsResend()) {
-                transport.send(r.request, null);
+                transport.send(r.request, r.remainingAddresses());
                 r.markSent();
             }
         }
@@ -103,7 +117,7 @@ public class MRPC extends Thread {
     }
     public synchronized void RPC(String path, Object value, Result.Callback callback, boolean resend) {
         if(transport != null) {
-            Set<String> requiredResponses = resend ? getPathEntry(path).onSend() : new HashSet<String>();
+            Collection<PathCacheEntry.UUIDEntry> requiredResponses = resend ? getPathEntry(path).onSend() : new ArrayList<PathCacheEntry.UUIDEntry>();
             Message.Request m = new Message.Request(id, uuid.toString(), path, value);
             results.put(id, new Result(requiredResponses, m, callback));
             transport.send(m, getPathEntry(path).getAddresses());

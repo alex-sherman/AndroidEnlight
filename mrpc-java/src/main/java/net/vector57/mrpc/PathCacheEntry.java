@@ -2,6 +2,7 @@ package net.vector57.mrpc;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,29 +16,29 @@ import java.util.Set;
 
 public class PathCacheEntry {
     private static final long TIMEOUT = 1000;
-    // If only Java had built in Tuples...
-    private static class UUIDEntry {
-        Long lastReceived;
+
+    public static class UUIDEntry {
+        private transient Long lastReceived;
+        String uuid;
         InetAddress address;
-        UUIDEntry() {
-            this(0L, null);
-        }
-        UUIDEntry(Long lastReceived, InetAddress address) {
+        UUIDEntry() { this(null, 0L, null); }
+        UUIDEntry(String uuid, Long lastReceived, InetAddress address) {
+            this.uuid = uuid;
             this.lastReceived = lastReceived;
             this.address = address;
         }
-        public boolean isStale(Long sendTime) {
+        boolean isStale(Long sendTime) {
             return lastReceived != 0 && sendTime - lastReceived >= TIMEOUT;
         }
     }
     private HashMap<String, UUIDEntry> entries = new HashMap<>();
     PathCacheEntry() { }
-    PathCacheEntry(List<String> entries) {
-        for (String uuid : entries) {
-            this.entries.put(uuid, new UUIDEntry());
+    PathCacheEntry(List<UUIDEntry> entries) {
+        for (UUIDEntry entry : entries) {
+            this.entries.put(entry.uuid, entry);
         }
     }
-    synchronized Set<String> onSend() {
+    synchronized Collection<UUIDEntry> onSend() {
         Long sendTime = System.currentTimeMillis();
         Iterator<Map.Entry<String, UUIDEntry>> iter = entries.entrySet().iterator();
         while (iter.hasNext()) {
@@ -52,7 +53,7 @@ public class PathCacheEntry {
         return getUUIDs();
     }
     synchronized void onRecv(String uuid, InetAddress source) {
-        entries.put(uuid, new UUIDEntry(0L, source));
+        entries.put(uuid, new UUIDEntry(uuid, 0L, source));
     }
     public List<InetAddress> getAddresses() {
         ArrayList<InetAddress> output = new ArrayList<>();
@@ -62,7 +63,7 @@ public class PathCacheEntry {
         }
         return output;
     }
-    synchronized Set<String> getUUIDs() {
-        return new HashSet<String>(entries.keySet());
+    synchronized Collection<UUIDEntry> getUUIDs() {
+        return new ArrayList<UUIDEntry>(entries.values());
     }
 }

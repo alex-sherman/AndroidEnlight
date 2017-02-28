@@ -6,6 +6,7 @@ import android.os.Handler;
 
 import net.vector57.mrpc.MRPC;
 import net.vector57.mrpc.Message;
+import net.vector57.mrpc.PathCacheEntry;
 import net.vector57.mrpc.Result;
 
 import java.net.InetAddress;
@@ -20,7 +21,7 @@ import java.util.Map;
 public class AndroidMRPC extends MRPC {
     private Handler mainHandler;
 
-    public AndroidMRPC(Context mainContext, InetAddress broadcastAddress, Map<String, List<String>> pathCache) throws SocketException {
+    public AndroidMRPC(Context mainContext, InetAddress broadcastAddress, Map<String, List<PathCacheEntry.UUIDEntry>> pathCache) throws SocketException {
         super(broadcastAddress, pathCache);
         mainHandler = new Handler(mainContext.getMainLooper());
     }

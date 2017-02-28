@@ -2,6 +2,11 @@ package net.vector57.mrpc;
 
 import com.google.gson.JsonElement;
 
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -27,22 +32,35 @@ public class Result {
     private long creationTime;
     private long lastSent;
     public Callback callback;
-    private Set<String> requiredResponses;
+    private Collection<PathCacheEntry.UUIDEntry> requiredResponses;
 
     public boolean isCompleted() { return System.currentTimeMillis() - creationTime > TIMEOUT; }
     public boolean needsResend() {
         return !requiredResponses.isEmpty() && System.currentTimeMillis() - lastSent > RESEND_DELAY;
     }
+    public List<InetAddress> remainingAddresses() {
+        ArrayList<InetAddress> output = new ArrayList<>();
+        for(PathCacheEntry.UUIDEntry entry : requiredResponses) {
+            if(entry != null)
+                output.add(entry.address);
+        }
+        return output;
+    }
     public void markSent() { lastSent = System.currentTimeMillis(); }
 
-    public Result(Set<String> requiredResponses, Message.Request request, Callback callback) {
+    public Result(Collection<PathCacheEntry.UUIDEntry> requiredResponses, Message.Request request, Callback callback) {
         this.requiredResponses = requiredResponses;
         creationTime = lastSent = System.currentTimeMillis();
         this.request = request;
         this.callback = callback;
     }
     public void resolve(final Message.Response message) {
-        requiredResponses.remove(message.src);
+        for(PathCacheEntry.UUIDEntry entry : requiredResponses) {
+            if(entry.uuid.equals(message.src)) {
+                requiredResponses.remove(entry);
+                break;
+            }
+        }
         this.response = message;
         if(this.callback != null)
             callback.onResult(message);
