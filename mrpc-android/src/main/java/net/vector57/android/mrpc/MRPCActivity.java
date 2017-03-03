@@ -31,10 +31,11 @@ public class MRPCActivity extends AppCompatActivity {
     private static int open_mrpcs = 0;
     private static AndroidMRPC _mrpc;
     public static AndroidMRPC mrpc() { return _mrpc; }
+    public static void mrpc(String path, Object value) { mrpc(path, value, null, true); }
     public static void mrpc(String path, Object value, Result.Callback callback)
-        {
-            if(_mrpc != null) _mrpc.RPC(path, value, callback); }
-    public static void mrpc(String path, Object value) { if(_mrpc != null) _mrpc.RPC(path, value); }
+    { mrpc(path, value, callback, true); }
+    public static void mrpc(String path, Object value, Result.Callback callback, boolean resend)
+    { if(_mrpc != null) _mrpc.RPC(path, value, callback, resend); }
     public static String path_cache_preference_key = "MRPC_path_cache";
 
     private synchronized AndroidMRPC allocateMRPC() {
