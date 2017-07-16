@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.SupplicantState;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -44,6 +46,7 @@ public class MRPCActivity extends AppCompatActivity {
     public static String proxy_url_preference_key = "MRPC_proxy_url";
     public static String proxy_url_api_key_key = "MRPC_api_key";
     public static String proxy_url_is_https_key = "MRPC_url_is_https";
+    public static String home_wifi_ssid = "MRPC_home_wifi_ssid";
 
 
     private synchronized AndroidMRPC allocateMRPC() {
@@ -56,6 +59,7 @@ public class MRPCActivity extends AppCompatActivity {
             String pathCacheJSON = sharedPref.getString(path_cache_preference_key, "{}");
             String proxyUrl = sharedPref.getString(proxy_url_preference_key, "");
             String apiKey = sharedPref.getString(proxy_url_api_key_key, "");
+            String homeWiFiSSID = sharedPref.getString(home_wifi_ssid, "");
             Boolean isHTTPS = sharedPref.getBoolean(proxy_url_is_https_key, false);
             Map<String, List<PathCacheEntry.UUIDEntry>> pathCache;
             try {
@@ -64,10 +68,10 @@ public class MRPCActivity extends AppCompatActivity {
             catch (JsonSyntaxException e) {
                 pathCache = new HashMap<>();
             }
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-            NetworkInfo wifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-
-            if (wifi.isConnected()) {
+            WifiManager wifiMgr = (WifiManager)this.getSystemService(Context.WIFI_SERVICE);
+            WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+            String ssid = wifiInfo.getSSID();
+            if ((homeWiFiSSID.equals("") || ("\"" + homeWiFiSSID + "\"").equals(ssid)) && wifiInfo.getSupplicantState() == SupplicantState.COMPLETED) {
                 try {
                     _mrpc = new AndroidMRPC(this, Util.getBroadcastAddress(this), pathCache);
                 } catch (IOException e) {
