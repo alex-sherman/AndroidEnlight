@@ -130,7 +130,8 @@ public class MRPC extends Thread {
                 Message.Response response = (Message.Response) message;
                 Result r = results.get(message.id);
                 if (r != null) {
-                    getPathEntry(r.request.dst).onRecv(message.src, source);
+                    if(source != null)
+                        getPathEntry(r.request.dst).onRecv(message.src, source);
                     r.resolve(response);
                 }
             } else if (message instanceof Message.Request) {
