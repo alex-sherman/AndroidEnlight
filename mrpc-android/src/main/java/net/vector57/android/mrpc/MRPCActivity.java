@@ -47,10 +47,15 @@ public class MRPCActivity extends AppCompatActivity {
     public static String proxy_url_api_key_key = "MRPC_api_key";
     public static String proxy_url_is_https_key = "MRPC_url_is_https";
     public static String home_wifi_ssid = "MRPC_home_wifi_ssid";
+    WifiManager.MulticastLock wifilock = null;
 
 
     private synchronized AndroidMRPC allocateMRPC() {
         if(open_mrpcs == 0) {
+            WifiManager wifi;
+            wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            wifilock = wifi.createMulticastLock("just some tag text");
+            wifilock.acquire();
             if(BuildConfig.DEBUG && _mrpc != null)
                 throw new AssertionError("Reference counting logic failure");
 
@@ -88,6 +93,8 @@ public class MRPCActivity extends AppCompatActivity {
     private synchronized void deallocateMRPC() {
         open_mrpcs--;
         if(open_mrpcs == 0) {
+            if(wifilock != null)
+                wifilock.release();
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
             if(_mrpc.mrpc != null)
                 sharedPref.edit().putString(path_cache_preference_key, MRPC.gson().toJson(_mrpc.mrpc.getPathCache())).apply();

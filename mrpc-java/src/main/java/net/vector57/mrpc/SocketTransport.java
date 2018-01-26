@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.List;
 
 /**
@@ -37,7 +39,11 @@ public class SocketTransport extends Thread {
         this.mrpc = mrpc;
         this.localPort = local_port;
         this.remote_port = local_port;
-        socket = new DatagramSocket(local_port);
+        try {
+            socket = new DatagramSocket(local_port, InetAddress.getByName("0.0.0.0"));
+            socket.setBroadcast(true);
+        } catch (UnknownHostException e) {
+        }
         broadcast = new InetSocketAddress(broadcastAddress, remote_port);
     }
 
